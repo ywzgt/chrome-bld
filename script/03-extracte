@@ -1,0 +1,30 @@
+#!/bin/bash
+
+ver="$(<VERSION)"
+SRCDEST="/c/chromium_sources_$ver"
+
+_check_src() {
+	grep sha256 "chromium-$ver.tar.xz.hashes" | sed 's/sha256//' >sha256
+	echo "$(<sha256)" >chromium.sha256
+	sha256sum -c chromium.sha256 && rm *sha256
+	grep sha512 "chromium-$ver.tar.xz.hashes" | sed 's/sha512//' >sha512
+	echo "$(<sha512)" >chromium.sha512
+	sha512sum -c chromium.sha512 && rm *sha512
+
+	#echo "Extracting the 'chromium-$ver.tar.xz'..."
+	#install -d "${SRCDEST}/src"
+	#tar xf chromium-$ver.tar.xz -C "${SRCDEST}/src" --strip-components=1 && rm chromium-$ver.tar.xz
+	rm chromium-$ver.tar.xz
+
+	pushd "${SRCDEST}" >/dev/null 2>&1
+		echo; cat src/chrome/VERSION
+		[ ! -d out ] || mv -v out src
+	popd >/dev/null 2>&1
+}
+
+_docmd() {
+	_check_src
+	echo; df -Th
+}
+
+_docmd

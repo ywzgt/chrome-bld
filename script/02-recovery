@@ -1,0 +1,28 @@
+#!/bin/bash
+
+
+ver="$(<VERSION)"
+git config --global user.name 'github-actions'
+git config --global user.email 'noreply@github.com'
+SRCDEST="/c/chromium_sources_$ver"
+
+_win_to_unix() {
+	printf '\n\nConvert Dos newlines to Unix newlines...'
+	sed -i 's/\r//' sha512
+	printf 'done.\n'
+	sha512sum -c sha512
+}
+
+_docmd() {
+	pushd build-$ver >/dev/null 2>&1
+	cat $ver.bld.part.tar.xz.[0-9]* > $ver.bld.tar.xz
+	sha512sum -c sha512 2>/dev/null || _win_to_unix
+	printf "  -> Extracting the $ver.bld.tar.xz..."
+	[ -d "${SRCDEST}" ] || mkdir -p "${SRCDEST}"
+	tar xf $ver.bld.tar.xz -C "${SRCDEST}"
+	printf ' done.\n'
+	popd >/dev/null 2>&1
+	rm -rf build-$ver
+}
+
+_docmd

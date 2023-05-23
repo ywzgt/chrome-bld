@@ -1,0 +1,15 @@
+#!/bin/bash
+
+ver="$(<VERSION)"
+SRCDEST="/c/chromium_sources_$ver"
+build_dir="src/out/win64"
+export PATH="$PWD/bin":$PATH
+export NINJA_STATUS="[%r %f/%t] "
+
+_docmd() {
+	cd "$SRCDEST"
+	timeout 17100 ninja -C "${build_dir}" mini_installer || true
+	echo; df -Tha
+}
+
+_docmd

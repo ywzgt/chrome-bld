@@ -1,0 +1,27 @@
+#!/bin/bash
+
+ver="$(<VERSION)"
+SRCDEST="/c/chromium_sources_$ver"
+build_dir="src/out/win64"
+GIT_DIR="$PWD"
+
+export PATH="$PWD/bin":$PATH
+export DEPOT_TOOLS_WIN_TOOLCHAIN=0
+export vs2022_install="C:\Program Files\Microsoft Visual Studio\2022\Enterprise"
+
+_docmd() {
+	cd "$SRCDEST"
+	[ -d "${build_dir}" ] || mkdir -pv "${build_dir}"
+
+	if [ -f "${build_dir}/build.ninja" ]; then
+		echo "The file '${build_dir}/build.ninja' already exists, skipping!"
+	else
+		cp "${GIT_DIR}/config/args.gn" ${build_dir}/args.gn
+	    pushd "${SRCDEST}/src" >/dev/null 2>&1
+		echo '  -> Gen args.gn ...'
+		gn gen "${build_dir#src/}" --filters=//chrome
+	    popd >/dev/null 2>&1
+	fi
+}
+
+_docmd
