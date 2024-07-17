@@ -1,19 +1,19 @@
 name: Build-Linux64
 on:
   workflow_dispatch:
-  #schedule:
+  schedule:
     #- cron: '05 08 * * *'   #Runs at 08:05 UTC  https://docs.github.com/zh/actions/using-workflows/workflow-syntax-for-github-actions#onschedule
     #- cron: '5 14,20 7 5 0' #Runs at 14:05 and 20:05, on day 7 of the month, and on Sunday, only in May. UTC (Two triggers: specific date, the day of the week)
     #- cron: '5 02,08 8 5 *' #Runs at 02:05 and 08:05, on day 8 of the month, only in May. UTC (One trigger: specific date)
-    #- cron: '30 15,21 04 5 4'
-    #- cron: '30 3,9,15 5 5 5'
+    - cron: '30 10,16,22 17 7 *'
+    - cron: '30 04,10 18 7 *'
 
 jobs:
   Build-Linux64:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Check
         run: bash -e script/check
@@ -55,14 +55,15 @@ jobs:
           cd src #https://chromium.googlesource.com/chromium/src/+/HEAD/build/util/lastchange.py
           sudo apt-get update >/dev/null 2>&1; #echo -e '\n\nUpgrading...'; sudo apt-get upgrade -y
           echo -e '\nInstalling build dependencies......' #./build/install-build-deps.sh --no-syms --no-android --no-arm --no-chromeos-fonts
-          sudo apt-get install -y $(echo $(grep -v '^#' ../install-build-dep)) ; echo ' '
-          node_ver="$(curl -sL https://github.com/ywzgt/chrome-bld-git/raw/main/version_node)" || node_ver="v18.16.0"
+          sudo apt-get install -y $(grep -v '^#' ../install-build-dep) ; echo ' '
+          node_ver="$(curl -sL https://nodejs.org | sed -n 's/.*\/\(v[0-9].*\)\/node-.*/\1/p')" || node_ver="v20.15.1"
           wget -nv -c "https://nodejs.org/dist/${node_ver}/node-${node_ver}-linux-x64.tar.xz"
           install -d third_party/node/linux/node-linux-x64
           tar xf "node-${node_ver}-linux-x64.tar.xz" --strip-components=1 -C third_party/node/linux/node-linux-x64
           third_party/node/linux/node-linux-x64/bin/node --version && rm "node-${node_ver}-linux-x64.tar.xz"
           python3 tools/clang/scripts/update.py
           python3 build/linux/sysroot_scripts/install-sysroot.py --arch=x64
+          python3 tools/rust/update_rust.py
 
       - name: Setup Build Config
         run: bash -e script/conf
@@ -78,3 +79,16 @@ jobs:
           echo ' '; df -Th; echo ' '; free -h
       - name: Push To tags or branch
         run: bash -e script/push
+
+      - name: Upload to Releases
+        if: env.TAG_VERSION
+        uses: softprops/action-gh-release@master
+        with:
+          tag_name: ${{ env.TAG_VERSION }}
+          body: chromium ${{ env.TAG_VERSION }} linux-x86_64
+          files: ./*.deb
+          fail_on_unmatched_files: true
+          prerelease: false
+      - name: Setup tmate ssh session
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3

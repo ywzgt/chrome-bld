@@ -15,10 +15,16 @@ _push_deb(){
 	#removed build-$ver in script/recovery,update main branch
 	git push origin "$branch"
 
+	echo "TAG_VERSION=$ver" >> $GITHUB_ENV
+	return 0
+
 	install -d DEST
 	mv chromium*${ver}*.deb DEST/
 	git rm -rf .
 	mv DEST/* .
+    sha256sum chromium*${ver}*.deb >sha256
+    sha512sum chromium*${ver}*.deb >sha512
+    git add sha256 sha512
 	git add chromium*${ver}*.deb
 	git commit -m "$TAG"
 	git checkout --orphan new_tag
