@@ -75,6 +75,14 @@ _docmd() {
 		_progress
 		_move_git
 	fi
+
+	sudo rm -rf /usr/share/swift
+	sudo rm -rf /usr/share/miniconda
+	sudo rm -rf /usr/share/dotnet
+	sudo rm -rf /usr/local
+	sudo rm -rf /opt/hostedtoolcache
+	sudo rm -rf /etc/apt/sources.list.d
+	df -Th
 }
 
 _docmd
