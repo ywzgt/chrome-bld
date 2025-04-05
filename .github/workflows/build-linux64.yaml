@@ -1,0 +1,94 @@
+name: Build-Linux64
+on:
+  workflow_dispatch:
+  schedule:
+    #- cron: '05 08 * * *'   #Runs at 08:05 UTC  https://docs.github.com/zh/actions/using-workflows/workflow-syntax-for-github-actions#onschedule
+    #- cron: '5 14,20 7 5 0' #Runs at 14:05 and 20:05, on day 7 of the month, and on Sunday, only in May. UTC (Two triggers: specific date, the day of the week)
+    #- cron: '5 02,08 8 5 *' #Runs at 02:05 and 08:05, on day 8 of the month, only in May. UTC (One trigger: specific date)
+    - cron: '56 11,17,23 5 4 *'
+    - cron: '30 05,11 6 4 *'
+
+jobs:
+  Build-Linux64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Check
+        run: bash -e script/check
+        env:
+          Actions_Token: ${{ secrets.ACTION_KEY }}
+      - name: Show ENV and Get-binary
+        run: |
+          printf 'Processor: '; cat /proc/cpuinfo|grep processor|wc -l
+          cat /proc/cpuinfo|grep 'model name'|head -1
+          cat /proc/meminfo | head; uname -a; sudo rm -rf /opt/hostedtoolcache || true
+          echo ' '; df -hT; echo ' '; sudo dmesg -T | head; echo ' '; swapon -v; echo ' '
+          bash -e script/binary
+
+      - name: Recovery Task (if exist)
+        run: |
+          [ -n "$(<VERSION)" ] && ver="$(<VERSION)" || ver=main
+          [ ! -d "build-$ver" ] || bash -e script/recovery
+
+      - name: Get Sources
+        run: |
+          [ -n "$(<VERSION)" ] && ver="$(<VERSION)" || ver=main #https://chromiumdash.appspot.com/releases?platform=Linux
+          wget -c "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-$ver.tar.xz"{,.hashes} -nv
+          grep sha256 "chromium-$ver.tar.xz.hashes" | sed 's/sha256//' >sha256
+          echo "$(<sha256)" >chromium.sha256
+          sha256sum -c chromium.sha256 && rm *sha256
+          grep sha512 "chromium-$ver.tar.xz.hashes" | sed 's/sha512//' >sha512
+          echo "$(<sha512)" >chromium.sha512
+          sha512sum -c chromium.sha512 && rm *sha512
+          printf "  -> Extracting the chromium-$ver.tar.xz..."
+          tar xf "chromium-$ver.tar.xz"
+          printf 'done.\n' && rm "chromium-$ver.tar.xz"
+          echo ' '; df -Th; echo ' '
+          ln -sv "chromium-$ver" src
+          [ ! -d out ] || mv -v out src/
+          echo ' '; cat src/chrome/VERSION
+
+      - name: Install bld-deps
+        run: |
+          cd src #https://chromium.googlesource.com/chromium/src/+/HEAD/build/util/lastchange.py
+          sudo apt-get update >/dev/null 2>&1; #echo -e '\n\nUpgrading...'; sudo apt-get upgrade -y
+          echo -e '\nInstalling build dependencies......' #./build/install-build-deps.sh --no-syms --no-android --no-arm --no-chromeos-fonts
+          ../install-build-dep.sh; echo ' '
+          node_ver="$(curl -sL https://nodejs.org | sed -n 's/.*\/\(v[0-9].*\)\/node-.*/\1/p')" || node_ver="v20.15.1"
+          wget -nv -c "https://nodejs.org/dist/${node_ver}/node-${node_ver}-linux-x64.tar.xz"
+          install -d third_party/node/linux/node-linux-x64
+          tar xf "node-${node_ver}-linux-x64.tar.xz" --strip-components=1 -C third_party/node/linux/node-linux-x64
+          third_party/node/linux/node-linux-x64/bin/node --version && rm "node-${node_ver}-linux-x64.tar.xz"
+          python3 tools/clang/scripts/update.py
+          python3 build/linux/sysroot_scripts/install-sysroot.py --arch=x64
+          python3 tools/rust/update_rust.py
+
+      - name: Setup Build Config
+        run: bash -e script/conf
+      - name: Build
+        run: |
+          export PATH="$PWD/bin":$PATH; export NINJA_STATUS="[%r %f/%t] "
+          timeout 18000 ninja -C src/out/linux64 chrome/installer/linux:stable_deb || true
+          echo ' '; df -h
+
+      - name: Package
+        run: |
+          bash -e script/package
+          echo ' '; df -Th; echo ' '; free -h
+      - name: Push To tags or branch
+        run: bash -e script/push
+
+      - name: Upload to Releases
+        if: env.TAG_VERSION
+        uses: softprops/action-gh-release@master
+        with:
+          tag_name: ${{ env.TAG_VERSION }}
+          body: chromium ${{ env.TAG_VERSION }} linux-x86_64
+          files: ./*.deb
+          fail_on_unmatched_files: true
+          prerelease: false
+      - name: Setup tmate ssh session
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3

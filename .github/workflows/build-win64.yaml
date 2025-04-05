@@ -1,0 +1,92 @@
+name: Build-Win64
+on:
+  workflow_dispatch:
+  #schedule:
+    #- cron: '05 08 * * *'   #Runs at 08:05 UTC  https://docs.github.com/zh/actions/using-workflows/workflow-syntax-for-github-actions#onschedule
+    #- cron: '5 14,20 7 5 0' #Runs at 14:05 and 20:05, on day 7 of the month, and on Sunday, only in May. UTC (Two triggers: specific date, the day of the week)
+    #- cron: '5 02,08 8 5 *' #Runs at 02:05 and 08:05, on day 8 of the month, only in May. UTC (One trigger: specific date)
+    #- cron: '10 18 5 5 5'
+    #- cron: '15 0,6,12,18 6 5 6'
+
+jobs:
+  build-x64-win:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          ref: windows
+
+      - name: Check
+        run: |
+          export PATH=/c/msys64/usr/bin:$PATH
+          printf 'Processor: '; cat /proc/cpuinfo|grep processor|wc -l
+          cat /proc/cpuinfo|grep 'model name'|head -1; echo
+          cat /proc/meminfo | head; echo ' '
+          bash -e script/00-check
+        shell: C:\msys64\usr\bin\bash.exe -e {0}
+        env:
+          Actions_Token: ${{ secrets.ACTION_KEY }}
+
+      - name: Get-binary
+        run: |
+          export PATH=/c/msys64/usr/bin:$PATH
+          uname -a
+          echo; df -hTa
+          bash -e script/01-binary
+        shell: C:\msys64\usr\bin\bash.exe -e {0}
+
+      - name: Recovery Task (if exist)
+        run: |
+          export PATH=/c/msys64/usr/bin:$PATH
+          [ -n "$(<VERSION)" ] && ver="$(<VERSION)" || ver=main
+          [ ! -d "build-$ver" ] || bash -e script/02-recovery
+        shell: C:\msys64\usr\bin\bash.exe -e {0}
+
+      - name: Get Sources
+        run: |
+          set /p ver=<VERSION
+          set SRCDEST="C:\chromium_sources_%ver%"
+          set url=https://commondatastorage.googleapis.com/chromium-browser-official
+          C:\msys64\usr\bin\wget -c -nv "%url%/chromium-%ver%.tar.xz.hashes" "%url%/chromium-%ver%.tar.xz"
+          7z x chromium-%ver%.tar.xz -oC:\
+          7z x C:\chromium-%ver%.tar -o%SRCDEST%
+          del /q C:\chromium-%ver%.tar
+          ren %SRCDEST%\chromium-%ver% src
+        shell: cmd
+
+      - name: Extracting Source
+        run: |
+          export PATH=/c/msys64/usr/bin:$PATH
+          bash -e script/03-extracte
+        shell: C:\msys64\usr\bin\bash.exe -e {0}
+
+      - name: RunHooks (Install build deps/tools)
+        run: |
+          export PATH=/c/msys64/usr/bin:$PATH
+          bash -e script/04-hooks
+        shell: C:\msys64\usr\bin\bash.exe -e {0}
+
+      - name: Setup Build Config
+        run: |
+          export PATH=/c/msys64/usr/bin:$PATH
+          bash -e script/05-conf
+        shell: C:\msys64\usr\bin\bash.exe -e {0}
+
+      - name: Build
+        run: |
+          export PATH=/c/msys64/usr/bin:$PATH
+          bash -e script/06-build
+        shell: C:\msys64\usr\bin\bash.exe -e {0}
+
+      - name: Package
+        run: |
+          export PATH=/c/msys64/usr/bin:$PATH
+          bash -e script/07-package
+        shell: C:\msys64\usr\bin\bash.exe -e {0}
+
+      - name: Push
+        run: |
+          export PATH=/c/msys64/usr/bin:$PATH
+          bash -e script/08-push
+        shell: C:\msys64\usr\bin\bash.exe -e {0}
