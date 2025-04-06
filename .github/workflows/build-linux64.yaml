@@ -6,7 +6,7 @@ on:
     #- cron: '5 14,20 7 5 0' #Runs at 14:05 and 20:05, on day 7 of the month, and on Sunday, only in May. UTC (Two triggers: specific date, the day of the week)
     #- cron: '5 02,08 8 5 *' #Runs at 02:05 and 08:05, on day 8 of the month, only in May. UTC (One trigger: specific date)
     - cron: '56 11,17,23 5 4 *'
-    - cron: '30 05,11 6 4 *'
+    - cron: '30 08,14,20 6 4 *'
 
 jobs:
   Build-Linux64:
@@ -56,11 +56,12 @@ jobs:
           sudo apt-get update >/dev/null 2>&1; #echo -e '\n\nUpgrading...'; sudo apt-get upgrade -y
           echo -e '\nInstalling build dependencies......' #./build/install-build-deps.sh --no-syms --no-android --no-arm --no-chromeos-fonts
           ../install-build-dep.sh; echo ' '
-          node_ver="$(curl -sL https://nodejs.org | sed -n 's/.*\/\(v[0-9].*\)\/node-.*/\1/p')" || node_ver="v20.15.1"
-          wget -nv -c "https://nodejs.org/dist/${node_ver}/node-${node_ver}-linux-x64.tar.xz"
-          install -d third_party/node/linux/node-linux-x64
-          tar xf "node-${node_ver}-linux-x64.tar.xz" --strip-components=1 -C third_party/node/linux/node-linux-x64
-          third_party/node/linux/node-linux-x64/bin/node --version && rm "node-${node_ver}-linux-x64.tar.xz"
+          #node_ver="$(curl -sL https://nodejs.org | sed -n 's/.*\/\(v[0-9].*\)\/node-.*/\1/p')" || node_ver="v20.15.1"
+          #wget -nv -c "https://nodejs.org/dist/${node_ver}/node-${node_ver}-linux-x64.tar.xz"
+          #install -d third_party/node/linux/node-linux-x64
+          #tar xf "node-${node_ver}-linux-x64.tar.xz" --strip-components=1 -C third_party/node/linux/node-linux-x64
+          third_party/node/update_node_binaries
+          third_party/node/linux/node-linux-x64/bin/node --version # rm "node-${node_ver}-linux-x64.tar.xz"
           python3 tools/clang/scripts/update.py
           python3 build/linux/sysroot_scripts/install-sysroot.py --arch=x64
           python3 tools/rust/update_rust.py
