@@ -54,7 +54,7 @@ jobs:
           node_ver="$(curl -sL https://nodejs.org | sed -n 's/.*\/\(v[0-9].*\)\/node-.*/\1/p')" || node_ver="$(<version_node)"
           cd src
           echo '::Installing build dependencies......'
-          install-build-deps --no-syms --android --no-chromeos-fonts
+          install-build-deps
           echo ' '
           wget -nv -c "https://nodejs.org/dist/${node_ver}/node-${node_ver}-linux-x64.tar.xz"
           install -d third_party/node/linux/node-linux-x64
