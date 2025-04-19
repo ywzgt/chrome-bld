@@ -1,0 +1,181 @@
+#!/bin/bash
+
+ver="$(<VERSION)"
+export PATH="$PWD/bin":"$PWD/depot_tools":$PATH DEPOT_TOOLS_UPDATE=0
+#export VPYTHON_BYPASS='manually managed python not supported by chrome operations'
+
+if [ -f 'EPOCH' ]; then
+	epoch="$(<EPOCH)"
+else
+	epoch="$(date +%s)"
+	echo "${epoch}" >EPOCH
+	git add EPOCH
+fi
+
+
+_rsync_src() {
+	[ -e '.gclient' ] || mv config/gclient .gclient
+	echo 'Run gclient sync...'
+	gclient sync --no-history --nohooks
+	src/build/util/lastchange.py -o src/build/util/LASTCHANGE
+	src/build/util/lastchange.py -m GPU_LISTS_VERSION --revision-id-only --header src/gpu/config/gpu_lists_version.h
+	src/build/util/lastchange.py -m SKIA_COMMIT_HASH -s src/third_party/skia --header src/skia/ext/skia_commit_hash.h
+	src/build/util/lastchange.py -s src/third_party/dawn --revision src/gpu/webgpu/DAWN_VERSION
+	src/tools/update_pgo_profiles.py --target=linux update --gs-url-base=chromium-optimization-profiles/pgo_profiles
+	download_from_google_storage.py --no_resume --extract --no_auth --bucket chromium-nodejs -s src/third_party/node/node_modules.tar.gz.sha1
+	#download_from_google_storage.py --no_resume --no_auth --bucket chromium-ads-detection -s src/third_party/subresource-filter-ruleset/data/UnindexedRules.sha1
+
+	#https://github.com/ungoogled-software/ungoogled-chromium-android/blob/master/build.sh
+	python3 src/tools/download_optimization_profile.py --newest_state=src/chrome/android/profiles/newest.txt --local_state=src/chrome/android/profiles/local.txt --output_name=src/chrome/android/profiles/afdo.prof --gs_url_base=chromeos-prebuilt/afdo-job/llvm || return $?
+}
+
+_rsync_tools() {
+	pushd src >/dev/null 2>&1
+	python3 tools/clang/scripts/update.py
+	python3 build/linux/sysroot_scripts/install-sysroot.py --arch=x86
+	python3 build/linux/sysroot_scripts/install-sysroot.py --arch=x64
+	python3 tools/rust/update_rust.py
+	popd >/dev/null 2>&1
+}
+
+_patch() {
+	local p ver_patches=(
+		Add-menu-item-to-bookmark-all-tabs
+		Add-support-for-writing-URIs  #dep
+		Inject-scripts-for-AMP-tracking-ads-and-video
+		Remove-binary-blob-integrations
+		Show-site-settings-for-cookies-javascript-and-ads
+		# https://github.com/uazo/cromite/blob/master/build/patches/
+	)
+
+	patch -Np1 -d src <patches/Eyeo-Adblock-for-Cromite.patch
+	patch -Np1 -d src <patches/User-agent-customization.patch
+
+	for p in ${ver_patches[@]}; do
+		if [[ -e patches/$p-${ver%%.*}.patch ]]; then
+			patch -Np1 -d src <patches/$p-${ver%%.*}.patch
+		else
+			patch -Np1 -d src <patches/$p.patch
+		fi
+	done
+
+	patch -Np1 -d src <patches/Restore-BookmarkToolbar-setCurrentFolder.patch  #dep
+	patch -Np1 -d src <patches/Add-bookmark-import-export-actions.patch
+}
+
+_docmd() {
+	patch -Np1 -d src <patches/bromite-build-utils.patch
+
+	patch -Np1 -d src <patches/kill-Vision.patch
+	patch -Np1 -d src <patches/kill-Location-fall-back-to-system.patch
+	patch -Np1 -d src <patches/kill-Auth.patch
+	patch -Np1 -d src <patches/Remove-binary-blob-integrations.patch
+	patch -Np1 -d src <patches/Remove-SMS-integration.patch
+	patch -Np1 -d src <patches/Remove-preload-of-com.google.android.gms.fonts.patch
+	#patch -Np1 -d src <patches/Override-Navigator-Language.patch
+	patch -Np1 -d src <patches/ungoogled-chromium-no-special-hosts-domains.patch
+	patch -Np1 -d src <patches/Use-dummy-DFM-installer.patch
+
+	patch -Np1 -d src <patches/Move-some-account-settings-back-to-privacy-settings.patch
+	patch -Np1 -d src <patches/Add-support-for-writing-URIs.patch
+	patch -Np1 -d src <patches/Do-not-ignore-download-location-prompt-setting.patch
+	patch -Np1 -d src <patches/Add-bookmark-import-export-actions.patch
+	patch -Np1 -d src <patches/Add-an-always-incognito-mode.patch
+	patch -Np1 -d src <patches/Add-a-proxy-configuration-page.patch
+	patch -Np1 -d src <patches/Add-custom-tab-intents-privacy-option.patch
+	patch -Np1 -d src <patches/User-agent-customization.patch
+	patch -Np1 -d src <patches/Experimental-user-scripts-support.patch
+	patch -Np1 -d src <patches/Add-cromite-flags-support.patch
+
+	patch -Np1 -d src <patches/Fix-chromium-build-bugs.patch
+	patch -Np1 -d src <patches/No-updater.patch
+
+	patch -Np1 -d src <patches/Fix-build-error.patch
+	patch -Np1 -d src <patches/add-browser-policy.patch
+
+	patch -Np1 -d src <patches/Add-menu-item-to-bookmark-all-tabs.patch
+	patch -Np1 -d src <patches/Add-support-for-ISupportHelpAndFeedback.patch
+
+patch -Np1 -d src <patches/Add-flag-to-disable-IPv6-probes.patch
+patch -Np1 -d src <patches/Add-flag-to-disable-vibration.patch
+patch -Np1 -d src <patches/Add-menu-item-to-view-source.patch
+patch -Np1 -d src <patches/Add-option-to-force-tablet-UI.patch
+patch -Np1 -d src <patches/Battery-API-return-nothing.patch
+patch -Np1 -d src <patches/disable-battery-status-updater.patch
+patch -Np1 -d src <patches/Disable-all-promo-dialogs.patch
+patch -Np1 -d src <patches/Disable-all-predictors-code.patch
+patch -Np1 -d src <patches/Disable-offline-autofetch-flag.patch
+patch -Np1 -d src <patches/Enable-native-Android-autofill.patch
+patch -Np1 -d src <patches/Never-fetch-popular-sites.patch
+patch -Np1 -d src <patches/ungoogled-chromium-Disable-webRTC-log-uploader.patch
+patch -Np1 -d src <patches/webRTC-do-not-expose-local-IP-addresses.patch
+patch -Np1 -d src <patches/Use-64-bit-WebView-processes.patch
+patch -Np1 -d src <patches/Remove-detection-of-captive-portals.patch
+patch -Np1 -d src <patches/Reduce-HTTP-headers-in-DoH-requests-to-bare-minimum.patch
+
+patch -Np1 -d src <patches/Content-settings-infrastructure.patch
+patch -Np1 -d src <patches/Add-webGL-site-setting.patch
+patch -Np1 -d src <patches/Add-webRTC-site-settings.patch
+patch -Np1 -d src <patches/Change-popup-site-setting.patch
+patch -Np1 -d src <patches/Show-NTP-at-startup.patch
+patch -Np1 -d src <patches/Show-site-settings-for-cookies-javascript-and-ads.patch
+(
+cd src
+git add .
+git commit -qm update
+git am ../patches/JIT-site-settings.patch
+git am ../patches/Site-setting-for-images.patch
+)
+patch -Np1 -d src <patches/Revert-remove-allowscript-content-setting-secondary-url.patch
+patch -Np1 -d src <patches/Timezone-customization.patch
+patch -Np1 -d src <patches/Enable-ImprovedBookmarks-by-default.patch
+patch -Np1 -d src <patches/Dictionary-suggestions-for-the-Omnibox.patch
+patch -Np1 -d src <patches/Disable-AsyncDNS-by-default.patch
+patch -Np1 -d src <patches/Disable-Feeback-Collector.patch
+patch -Np1 -d src <patches/Disable-NTP-remote-suggestions-by-default.patch
+patch -Np1 -d src <patches/Disable-privacy-issues-in-password-manager.patch
+
+(
+cd src
+git add .
+git commit -qm 1
+git am ../patches/Add-search-engine.patch
+git am ../patches/eyeo-beta-118.0.5993.48-base.patch
+git am ../patches/eyeo-beta-118.0.5993.48-chrome_integration.patch
+git am ../patches/eyeo-beta-118.0.5993.48-android_api.patch
+git am ../patches/eyeo-beta-118.0.5993.48-android_settings.patch
+git am ../patches/eyeo-beta-118.0.5993.48-extension_api.patch
+)
+patch -Np1 -d src <patches/Eyeo-Adblock-Cromite.patch
+
+	_rsync_src
+	_rsync_tools
+	find src -name \*.orig -delete
+	find src -exec touch -cd @${epoch} {} +
+	[ ! -d out ] || mv -v out src/
+}
+
+git clone --depth 1 https://github.com/uazo/cromite -b v126.0.6478.186-d9e9f1d8f6825634fb9971a0880d974c7ce182ce
+cp cromite/build/patches/* patches/
+
+cat >patches/Fix-build-error.patch <<"EOF"
+--- a/chrome/browser/language/android/java/src/org/chromium/chrome/browser/language/settings/AppLanguagePreferenceDelegate.java
++++ b/chrome/browser/language/android/java/src/org/chromium/chrome/browser/language/settings/AppLanguagePreferenceDelegate.java
+@@ -94,15 +94,6 @@
+         // Disable preference so a second downloaded cannot be started while one is in progress.
+         mPreference.setEnabled(false);
+
+-        AppLocaleUtils.setAppLanguagePref(
+-                code,
+-                (success) -> {
+-                    if (success) {
+-                        languageSplitDownloadComplete();
+-                    } else {
+-                        languageSplitDownloadFailed();
+-                    }
+-                });
+     }
+
+     /** Callback to update the UI when a language split has successfully been installed. */
+EOF
+_docmd
