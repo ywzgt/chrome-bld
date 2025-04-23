@@ -1,0 +1,17 @@
+--- a/Add-cromite-flags-support.patch
++++ b/Add-cromite-flags-support.patch
+@@ -430,10 +430,10 @@
+ diff --git a/chrome/android/java/res/xml/privacy_preferences.xml b/chrome/android/java/res/xml/privacy_preferences.xml
+ --- a/chrome/android/java/res/xml/privacy_preferences.xml
+ +++ b/chrome/android/java/res/xml/privacy_preferences.xml
+-@@ -70,6 +70,10 @@ found in the LICENSE file.
+-         android:title="@string/tabgrid_use_icons_title"
+-         android:summary="@string/tabgrid_use_icons_summary"
+-         android:defaultValue="false" />
++@@ -54,6 +54,10 @@ found in the LICENSE file.
++         android:key="do_not_track"
++         android:title="@string/do_not_track_title"
++         android:fragment="org.chromium.chrome.browser.privacy.settings.DoNotTrackSettings" />
+ +    <org.chromium.chrome.browser.about_settings.HyperlinkPreference
+ +        android:key="cromite_flags"
+ +        android:title="@string/cromite_flags_title"

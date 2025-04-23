@@ -7,32 +7,6 @@ export NINJA_STATUS="[%r %f/%t %es] "
 export PATH="$PWD/bin":$PATH
 export REBASELINE_PROGUARD=1
 
-_build64() {
-	echo
-	echo "Start building pure 64-bit targets..."
-	sed '/^chrome_public_manifest_package/c\chrome_public_manifest_package = "org.chromium"' -i "${build_dir}/args.gn"
-	ninja -C "${build_dir}" monochrome_64_public_bundle monochrome_64_public_apk monochrome_32_public_bundle chrome_public_apk
-}
-
-_ck_status() {
-	local a=$?
-	local f hhttps://www.06se.com/60406.html
-
-	for f in page_info/page_info_buildflags.h \
-		resource_coordinator/lifecycle_unit_state.mojom{,-forward}.h
-	do
-		h="${build_dir}/gen/chrome/browser/$f"
-		if [ ! -f "src/${h#*/gen/}" ]; then
-			ln -sv ../../../${h#src/} "src/${h#*/gen/}"
-		else
-			return $a
-		fi
-	done
-
-	ninja -C "${build_dir}" gen/chrome/browser/resource_coordinator/lifecycle_unit_state.mojom-forward.h
-	ninja -C "${build_dir}" monochrome_64_public_apk $* || _exit
-}
-
 _docmd() {
 	local targets=(
 		#trichrome_chrome_bundle  # only bundle
@@ -42,9 +16,7 @@ _docmd() {
 		chrome_public_apk
 	)
 
-(cd src; gn gen "${build_dir#src/}" --filters=//chrome)
-
-	ninja -C "${build_dir}" components/content_settings/core/common:bromite_content_settings
+	#ninja -C "${build_dir}" components/content_settings/core/common:bromite_content_settings
 	#components/page_image_service/mojom:mojo_bindings \
 	#	chrome/browser/resource_coordinator:mojo_bindings page_info_buildflags
 
