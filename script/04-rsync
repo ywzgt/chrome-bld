@@ -83,6 +83,8 @@ patch -Np1 -d src <patches/Eyeo-Adblock-Cromite.patch
 sed -i '1i#include "base/strings/string_util.h"' src/components/user_scripts/browser/user_script_prefs.cc
 sed -i '/mDelegate.requestRestart/d' src/chrome/android/java/src/org/chromium/chrome/browser/accessibility/settings/AccessibilitySettings.java
 
+sed -i '/net::LOAD_MINIMAL_HEADERS/d' src/components/adblock/core/subscription/ongoing_subscription_request_impl.cc
+
 	_rsync_src
 	_rsync_tools
 	find src -name \*.orig -delete
