@@ -16,8 +16,7 @@ _docmd() {
 		chrome_public_apk
 	)
 
-	#ninja -C "${build_dir}" components/content_settings/core/common:bromite_content_settings
-	#components/page_image_service/mojom:mojo_bindings \
+	ninja -C "${build_dir}" components/page_image_service/mojom:mojo_bindings
 	#	chrome/browser/resource_coordinator:mojo_bindings page_info_buildflags
 
 	sed '/^chrome_public_manifest_package/c\chrome_public_manifest_package = "org.chromium.chrome"' -i "${build_dir}/args.gn"
