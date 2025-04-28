@@ -78,12 +78,13 @@ git am ../patches/eyeo-beta-118.0.5993.48-android_api.patch
 git am ../patches/eyeo-beta-118.0.5993.48-android_settings.patch
 git am ../patches/eyeo-beta-118.0.5993.48-extension_api.patch
 )
-#patch -Np1 -d src <patches/Eyeo-Adblock-Cromite.patch
+patch -Np1 -bd src <patches/Eyeo-Adblock-Cromite.patch
 
 sed -i '1i#include "base/strings/string_util.h"' src/components/user_scripts/browser/user_script_prefs.cc
 sed -i '/mDelegate.requestRestart/d' src/chrome/android/java/src/org/chromium/chrome/browser/accessibility/settings/AccessibilitySettings.java
 
-#sed -i '/net::LOAD_/d' src/components/adblock/core/subscription/ongoing_subscription_request_impl.cc
+mv src/components/adblock/core/subscription/ongoing_subscription_request_impl.cc{.orig,}
+mv src/chrome/browser/chrome_content_browser_client.cc{.orig,}
 
 	_rsync_src
 	_rsync_tools
