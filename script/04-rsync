@@ -49,6 +49,7 @@ patch -Np1 -d src <patches/Add-bookmark-import-export-actions.patch
 patch -Np1 -d src <patches/Bookmarks-select-all-menu-entry.patch
 patch -Np1 -d src <patches/Add-a-proxy-configuration-page.patch
 patch -Np1 -d src <patches/Use-64-bit-WebView-processes.patch
+patch -Np1 -d src <patches/Reduce-HTTP-headers-in-DoH-requests-to-bare-minimum.patch
 patch -Np1 -d src <patches/Add-menu-item-to-view-source.patch
 patch -Np1 -d src <patches/Enable-darken-websites-checkbox-in-themes.patch
 patch -Np1 -d src <patches/Add-menu-item-to-bookmark-all-tabs.patch
@@ -83,8 +84,8 @@ patch -Np1 -bd src <patches/Eyeo-Adblock-Cromite.patch
 sed -i '1i#include "base/strings/string_util.h"' src/components/user_scripts/browser/user_script_prefs.cc
 sed -i '/mDelegate.requestRestart/d' src/chrome/android/java/src/org/chromium/chrome/browser/accessibility/settings/AccessibilitySettings.java
 
-mv src/components/adblock/core/subscription/ongoing_subscription_request_impl.cc{.orig,}
-mv src/chrome/browser/chrome_content_browser_client.cc{.orig,}
+#mv src/components/adblock/core/subscription/ongoing_subscription_request_impl.cc{.orig,}
+#mv src/chrome/browser/chrome_content_browser_client.cc{.orig,}
 
 	_rsync_src
 	_rsync_tools
