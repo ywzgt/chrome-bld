@@ -112,14 +112,13 @@ sed -i '/mDelegate.requestRestart/d' src/chrome/android/java/src/org/chromium/ch
 #mv src/components/adblock/core/subscription/ongoing_subscription_request_impl.cc{.orig,}
 #mv src/chrome/browser/chrome_content_browser_client.cc{.orig,}
 
-find src -iname *mojom* | xargs rm -rf
-
 	_rsync_src
 	_rsync_tools
 	find src -name \*.orig -delete
 	find src -exec touch -cd @${epoch} {} +
 	[ ! -d out ] || mv -v out src/
 
+find src/out -iname *mojom* | xargs rm -rf
 rm -f src/out/*/build.ninja
 }
 
