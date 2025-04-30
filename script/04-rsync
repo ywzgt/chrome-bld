@@ -113,13 +113,14 @@ sed -i '/mDelegate.requestRestart/d' src/chrome/android/java/src/org/chromium/ch
 #mv src/chrome/browser/chrome_content_browser_client.cc{.orig,}
 
 find src -iname *mojom* | xargs rm -rf
-rm -f src/out/*/build.ninja
 
 	_rsync_src
 	_rsync_tools
 	find src -name \*.orig -delete
 	find src -exec touch -cd @${epoch} {} +
 	[ ! -d out ] || mv -v out src/
+
+rm -f src/out/*/build.ninja
 }
 
 git clone --depth 1 https://github.com/uazo/cromite -b v126.0.6478.186-d9e9f1d8f6825634fb9971a0880d974c7ce182ce
