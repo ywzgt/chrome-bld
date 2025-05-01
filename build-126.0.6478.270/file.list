@@ -1,15 +1,16 @@
 126.0.6478.270.bld.tar.xz: XZ compressed data, checksum CRC64
--rw-r--r-- 1 runner docker 892M Apr 30 22:56 126.0.6478.270.bld.tar.xz
--rw-r--r-- 1 runner docker 934326780 Apr 30 22:56 126.0.6478.270.bld.tar.xz
+-rw-r--r-- 1 runner docker 1.2G May  1 12:43 126.0.6478.270.bld.tar.xz
+-rw-r--r-- 1 runner docker 1203751000 May  1 12:43 126.0.6478.270.bld.tar.xz
 drwxr-xr-x runner/docker     0 2025-04-25 16:30 out/
-drwxr-xr-x runner/docker     0 2025-04-30 22:49 out/monochrome/
+drwxr-xr-x runner/docker     0 2025-05-01 12:33 out/monochrome/
 -rw-r--r-- runner/docker 92444 2025-04-25 16:30 out/monochrome/performance_test_suite_android_chrome.runtime_deps
--rw-r--r-- runner/docker 98257816 2025-04-30 17:51 out/monochrome/toolchain.ninja
--rw------- runner/docker        0 2025-04-30 17:51 out/monochrome/build.ninja.stamp
+-rw-r--r-- runner/docker 98257038 2025-05-01 11:48 out/monochrome/toolchain.ninja
+-rw------- runner/docker        0 2025-05-01 11:48 out/monochrome/build.ninja.stamp
 -rw-r--r-- runner/docker      961 2025-04-25 16:30 out/monochrome/v8_features.json
--rw------- runner/docker 11117721 2025-04-30 17:51 out/monochrome/build.ninja
+-rw------- runner/docker 11117372 2025-05-01 11:48 out/monochrome/build.ninja
+-rwxr-xr-x runner/docker   555304 2025-05-01 08:24 out/monochrome/chrome_crashpad_handler
 drwxr-xr-x runner/docker        0 2025-04-25 16:30 out/monochrome/robolectric_x64/
--rw-r--r-- runner/docker   378489 2025-04-30 17:51 out/monochrome/robolectric_x64/toolchain.ninja
+-rw-r--r-- runner/docker   378489 2025-05-01 11:48 out/monochrome/robolectric_x64/toolchain.ninja
 drwxr-xr-x runner/docker        0 2025-04-25 16:30 out/monochrome/robolectric_x64/local_rustc_sysroot/
 drwxr-xr-x runner/docker        0 2025-04-25 16:30 out/monochrome/robolectric_x64/local_rustc_sysroot/lib/
 drwxr-xr-x runner/docker        0 2025-04-25 16:30 out/monochrome/robolectric_x64/local_rustc_sysroot/lib/rustlib/
@@ -586,9 +587,11 @@ drwxr-xr-x runner/docker        0 2025-04-25 16:30 out/monochrome/robolectric_x6
 -rw-r--r-- runner/docker     6566 2025-04-25 16:30 out/monochrome/robolectric_x64/obj/base/third_party/double_conversion/double_conversion.ninja
 drwxr-xr-x runner/docker        0 2025-04-25 16:30 out/monochrome/robolectric_x64/obj/base/third_party/xdg_user_dirs/
 -rw-r--r-- runner/docker     3771 2025-04-25 16:30 out/monochrome/robolectric_x64/obj/base/third_party/xdg_user_dirs/xdg_user_dirs.ninja
+hrwxr-xr-x runner/docker        0 2025-05-01 08:24 out/monochrome/libchrome_crashpad_handler.so link to out/monochrome/chrome_crashpad_handler
+-rw-r--r-- runner/docker   810263 2025-05-01 12:28 out/monochrome/libchrome__combined.so.rsp
 -rw-r--r-- runner/docker   254003 2025-04-25 16:30 out/monochrome/chrome_public_wpt.runtime_deps
 drwxr-xr-x runner/docker        0 2025-04-25 19:44 out/monochrome/clang_x86_v8_arm/
--rw-r--r-- runner/docker   492275 2025-04-30 17:51 out/monochrome/clang_x86_v8_arm/toolchain.ninja
+-rw-r--r-- runner/docker   492275 2025-05-01 11:48 out/monochrome/clang_x86_v8_arm/toolchain.ninja
 -rwxr-xr-x runner/docker  2473536 2025-04-25 18:42 out/monochrome/clang_x86_v8_arm/torque
 -rw-r--r-- runner/docker 10468208 2024-08-20 04:22 out/monochrome/clang_x86_v8_arm/icudtl.dat
 -rw-r--r-- runner/docker     1350 2025-04-25 18:14 out/monochrome/clang_x86_v8_arm/v8_build_config.json
@@ -4998,6 +5001,3 @@ drwxr-xr-x runner/docker        0 2025-04-25 18:43 out/monochrome/clang_x86_v8_a
 -rw-r--r-- runner/docker     3258 2025-04-25 18:43 out/monochrome/clang_x86_v8_arm/gen/v8/torque-generated/src/objects/promise-tq.cc
 -rw-r--r-- runner/docker    22857 2025-04-25 18:43 out/monochrome/clang_x86_v8_arm/gen/v8/torque-generated/src/objects/js-array-buffer-tq.inc
 -rw-r--r-- runner/docker     9167 2025-04-25 18:43 out/monochrome/clang_x86_v8_arm/gen/v8/torque-generated/src/objects/js-break-iterator-tq.inc
--rw-r--r-- runner/docker    18310 2025-04-25 18:43 out/monochrome/clang_x86_v8_arm/gen/v8/torque-generated/src/objects/api-callbacks-tq-inl.inc
--rw-r--r-- runner/docker    13800 2025-04-25 18:43 out/monochrome/clang_x86_v8_arm/gen/v8/torque-generated/src/objects/module-tq.inc
--rw-r--r-- runner/docker      626 2025-04-25 18:43 out/monochrome/clang_x86_v8_arm/gen/v8/torque-generated/src/objects/js-segments-tq.cc
