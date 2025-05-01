@@ -40,6 +40,8 @@ _rsync_tools() {
 
 _docmd() {
 patch -Np1 -d src <patches/bromite-build-utils.patch
+patch -Np1 -d src <patches/ungoogled-chromium-no-special-hosts-domains.patch
+
 patch -Np1 -d src <patches/Add-support-for-ISupportHelpAndFeedback.patch
 patch -Np1 -d src <patches/webRTC-do-not-expose-local-IP-addresses.patch
 patch -Np1 -d src <patches/Do-not-ignore-download-location-prompt-setting.patch
@@ -80,31 +82,6 @@ git am ../patches/eyeo-beta-118.0.5993.48-android_settings.patch
 git am ../patches/eyeo-beta-118.0.5993.48-extension_api.patch
 )
 patch -Np1 -bd src <patches/Eyeo-Adblock-Cromite.patch
-
-cat >fix-error.patch<<"EOF"
---- a/chrome/renderer/url_loader_throttle_provider_impl.cc
-+++ b/chrome/renderer/url_loader_throttle_provider_impl.cc
-@@ -231,17 +231,6 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
-   }
- #endif
- 
--  throttles.emplace_back(std::make_unique<GoogleURLLoaderThrottle>(
--#if BUILDFLAG(IS_ANDROID)
--      client_data_header,
--#endif
--#if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
--      chrome_content_renderer_client_->GetChromeObserver()
--          ->CreateBoundSessionRequestThrottledHandler(),
--#endif
--      chrome_content_renderer_client_->GetChromeObserver()
--          ->GetDynamicParams()));
--
- #if BUILDFLAG(IS_CHROMEOS_ASH)
-   throttles.emplace_back(std::make_unique<AshMergeSessionLoaderThrottle>(
-       chrome_content_renderer_client_->GetChromeObserver()
-diff --git a/chrome/test/BUILD.gn b/chrome/test/BUILD.gn
-EOF
-patch -Np1 -d src <fix-error.patch
 
 sed -i '1i#include "base/strings/string_util.h"' src/components/user_scripts/browser/user_script_prefs.cc
 sed -i '/mDelegate.requestRestart/d' src/chrome/android/java/src/org/chromium/chrome/browser/accessibility/settings/AccessibilitySettings.java
