@@ -85,7 +85,7 @@ patch -Np1 -bd src <patches/Eyeo-Adblock-Cromite.patch
 
 patch -Np1 -bd src <patches/Partitioning-all-cookies-by-top-frame-domain.patch
 wget -q https://github.com/ywzgt/chrome-bld/releases/download/126.0.6478.270/eyeo-webview_integration.patch
-patch -Np1 -bd src <patches/eyeo-webview_integration.patch
+patch -Np1 -bd src <eyeo-webview_integration.patch
 
 sed -i '1i#include "base/strings/string_util.h"' src/components/user_scripts/browser/user_script_prefs.cc
 sed -i '/mDelegate.requestRestart/d' src/chrome/android/java/src/org/chromium/chrome/browser/accessibility/settings/AccessibilitySettings.java
@@ -106,25 +106,6 @@ sed -i '1i#include "chrome/browser/google/google_update_settings_posix.cc"' chro
 
 git clone --depth 1 https://github.com/uazo/cromite -b v126.0.6478.186-d9e9f1d8f6825634fb9971a0880d974c7ce182ce
 cp cromite/build/patches/* patches/
-
-cat >patches/Fix-build-error.patch <<"EOF"
---- a/chrome/browser/language/android/java/src/org/chromium/chrome/browser/language/settings/AppLanguagePreferenceDelegate.java
-+++ b/chrome/browser/language/android/java/src/org/chromium/chrome/browser/language/settings/AppLanguagePreferenceDelegate.java
-@@ -94,15 +94,6 @@
-         // Disable preference so a second downloaded cannot be started while one is in progress.
-         mPreference.setEnabled(false);
-
--        AppLocaleUtils.setAppLanguagePref(
--                code,
--                (success) -> {
--                    if (success) {
--                        languageSplitDownloadComplete();
--                    } else {
--                        languageSplitDownloadFailed();
--                    }
--                });
-     }
-
      /** Callback to update the UI when a language split has successfully been installed. */
 EOF
 _docmd
