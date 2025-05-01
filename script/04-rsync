@@ -83,6 +83,10 @@ git am ../patches/eyeo-beta-118.0.5993.48-extension_api.patch
 )
 patch -Np1 -bd src <patches/Eyeo-Adblock-Cromite.patch
 
+patch -Np1 -bd src <patches/Partitioning-all-cookies-by-top-frame-domain.patch
+wget -q https://github.com/ywzgt/chrome-bld/releases/download/126.0.6478.270/eyeo-webview_integration.patch
+patch -Np1 -bd src <patches/eyeo-webview_integration.patch
+
 sed -i '1i#include "base/strings/string_util.h"' src/components/user_scripts/browser/user_script_prefs.cc
 sed -i '/mDelegate.requestRestart/d' src/chrome/android/java/src/org/chromium/chrome/browser/accessibility/settings/AccessibilitySettings.java
 
