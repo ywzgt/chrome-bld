@@ -21,7 +21,7 @@ _docmd() {
 		chrome/browser/resource_coordinator:mojo_bindings
 
 	sed '/^chrome_public_manifest_package/c\chrome_public_manifest_package = "org.chromium"' -i "${build_dir}/args.gn"
-	ninja -C "${build_dir}" chrome_public_{apk,bundle} || _exit # echo ":: Build failed!"
+	ninja -C "${build_dir}" chrome_public_{apk,bundle} system_webview_apk || _exit # echo ":: Build failed!"
 }
 
 _exit() {
