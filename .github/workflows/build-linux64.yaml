@@ -47,7 +47,6 @@ jobs:
           printf 'done.\n' && rm "chromium-$ver.tar.xz"
           echo ' '; df -Th; echo ' '
           ln -sv "chromium-$ver" src
-          [ ! -d out ] || mv -v out src/
           echo ' '; cat src/chrome/VERSION
 
       - name: Install bld-deps
