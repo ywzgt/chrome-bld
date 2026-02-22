@@ -5,6 +5,7 @@ git config --global user.name 'github-actions'
 git config --global user.email 'noreply@github.com'
 
 _docmd() {
+	if [ -d out ]; then mv -v out src; fi
 	local build_dir="src/out/linux64"
 	if [ -f "${build_dir}/build.ninja" ]
 	then
@@ -18,9 +19,6 @@ _docmd() {
 		gn gen "${build_dir#src/}" --filters=//chrome
 	    popd >/dev/null 2>&1
 	fi
-	if [ -d src/out ]; then mv src/out ..; fi
-	find src -exec touch -cd @0 {} +
-	if [ -d ../out ]; then mv ../out src; fi
 }
 
 _docmd
